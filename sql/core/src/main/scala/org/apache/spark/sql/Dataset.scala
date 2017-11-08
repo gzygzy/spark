@@ -2614,6 +2614,23 @@ class Dataset[T] private[sql](
     createOrReplaceTempView(tableName)
   }
 
+
+  /*
+zy add
+*/
+  def registerMixTable(db: String, tb: String): Unit = {
+    sparkSession.sessionState.catalog.registerMixTable(db, tb, logicalPlan)
+  }
+  def lookupPezyTable(db: String, tb: String): Option[LogicalPlan] = {
+    sparkSession.sessionState.catalog.lookupMixTable(db, tb)
+  }
+
+  def getlogicalPlan(): LogicalPlan = {
+    logicalPlan
+  }
+
+
+
   /**
    * Creates a local temporary view using the given name. The lifetime of this
    * temporary view is tied to the [[SparkSession]] that was used to create this Dataset.

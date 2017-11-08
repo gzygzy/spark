@@ -640,6 +640,18 @@ class SessionCatalog(
     }
   }
 
+  /******zy add*******/
+  private val mixTables = new mutable.HashMap[String, LogicalPlan]
+  def registerMixTable(db: String,table: String,pezyviewDefinition: LogicalPlan) =  synchronized {
+    logDebug("db: "+db+" table:"+table+" LogicalPlan: "+ pezyviewDefinition)
+    mixTables.put(db+"."+table, pezyviewDefinition)
+  }
+  def lookupMixTable(db: String,table: String):Option[LogicalPlan] =  synchronized {
+    val lp = mixTables.get(db+"."+table)
+    logDebug("lookupPezyTable: "+db +" . "+table+" :"+lp)
+    lp
+  }
+
   /**
    * Return a [[LogicalPlan]] that represents the given table or view.
    *
