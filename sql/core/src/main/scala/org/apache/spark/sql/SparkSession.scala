@@ -20,11 +20,6 @@ package org.apache.spark.sql
 import java.io.Closeable
 import java.util.concurrent.atomic.AtomicReference
 
-import scala.collection.JavaConverters._
-import scala.reflect.runtime.universe.TypeTag
-import scala.util.control.NonFatal
-
-import org.apache.spark.{SPARK_VERSION, SparkConf, SparkContext}
 import org.apache.spark.annotation.{DeveloperApi, Experimental, InterfaceStability}
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.internal.Logging
@@ -38,14 +33,18 @@ import org.apache.spark.sql.catalyst.plans.logical.{LocalRelation, Range}
 import org.apache.spark.sql.execution._
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.execution.ui.SQLListener
-import org.apache.spark.sql.internal._
 import org.apache.spark.sql.internal.StaticSQLConf.CATALOG_IMPLEMENTATION
+import org.apache.spark.sql.internal._
 import org.apache.spark.sql.sources.BaseRelation
 import org.apache.spark.sql.streaming._
 import org.apache.spark.sql.types.{DataType, StructType}
 import org.apache.spark.sql.util.ExecutionListenerManager
 import org.apache.spark.util.Utils
+import org.apache.spark.{SPARK_VERSION, SparkConf, SparkContext}
 
+import scala.collection.JavaConverters._
+import scala.reflect.runtime.universe.TypeTag
+import scala.util.control.NonFatal
 
 /**
  * The entry point to programming Spark with the Dataset and DataFrame API.
@@ -628,6 +627,20 @@ class SparkSession private(
    * @since 2.0.0
    */
   def sql(sqlText: String): DataFrame = {
+    //zy add
+    val xx = conf.contains("spark.pezy.sql.plus")
+    logInfo("sql :pezyinterface 0"+xx)
+    // if(xx){
+    logInfo("sql :pezyinterface 1")
+    val className ="com.pezy.spark.SqlPlus"
+    val cls = Class.forName(className)
+    logInfo("sql :pezyinterface 2")
+    val newInst = cls.newInstance()
+    logInfo("sql :pezyinterface 3")
+    newInst.asInstanceOf[mixinterface].analysisSql(sqlText,this)
+    logInfo("sql :pezyinterface 4")
+    //}
+    //add end
     Dataset.ofRows(self, sessionState.sqlParser.parsePlan(sqlText))
   }
 
