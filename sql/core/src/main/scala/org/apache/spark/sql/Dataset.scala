@@ -2629,7 +2629,10 @@ zy add
     logicalPlan
   }
 
-
+  def createMixStreamTable(db: String,table: String): Unit =  {
+    //createTempViewCommand(viewName, replace = true, global = false)
+    sparkSession.sessionState.catalog.registerMixTable(db, table, logicalPlan)
+  }
 
   /**
    * Creates a local temporary view using the given name. The lifetime of this
@@ -2649,11 +2652,6 @@ zy add
     createTempViewCommand(viewName, replace = false, global = false)
   }
 
-//zy add
-  def createMixStreamTable(db: String,table: String): Unit = withPlan {
-    //createTempViewCommand(viewName, replace = true, global = false)
-    sparkSession.sessionState.catalog.registerMixTable(db, tb, logicalPlan)
-  }
   /**
    * Creates a local temporary view using the given name. The lifetime of this
    * temporary view is tied to the [[SparkSession]] that was used to create this Dataset.
