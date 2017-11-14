@@ -18,6 +18,7 @@
 package org.apache.spark.sql.execution
 
 import org.apache.spark.SparkContext
+import org.apache.spark.internal.Logging
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
@@ -28,7 +29,7 @@ class SparkPlanner(
     val sparkContext: SparkContext,
     val conf: SQLConf,
     val experimentalMethods: ExperimentalMethods)
-  extends SparkStrategies {
+  extends SparkStrategies  with Logging {
 
   def numPartitions: Int = conf.numShufflePartitions
 
@@ -91,14 +92,17 @@ class SparkPlanner(
     // TODO: Decouple final output schema from expression evaluation so this copy can be
     // avoided safely.
 
+    log.info(s"pruneFilterProject prunePushedDownFilters: $prunePushedDownFilters, projectSet: $projectSet Attribute $projectList ")
     if (AttributeSet(projectList.map(_.toAttribute)) == projectSet &&
-        filterSet.subsetOf(projectSet)) {
+      filterSet.subsetOf(projectSet)) {
       // When it is possible to just use column pruning to get the right projection and
       // when the columns of this projection are enough to evaluate all filter conditions,
       // just do a scan followed by a filter, with no extra project.
+      log.info(s" pruneFilterProject true ")
       val scan = scanBuilder(projectList.asInstanceOf[Seq[Attribute]])
       filterCondition.map(FilterExec(_, scan)).getOrElse(scan)
     } else {
+      log.info(s" pruneFilterProject false ")
       val scan = scanBuilder((projectSet ++ filterSet).toSeq)
       ProjectExec(projectList, filterCondition.map(FilterExec(_, scan)).getOrElse(scan))
     }
