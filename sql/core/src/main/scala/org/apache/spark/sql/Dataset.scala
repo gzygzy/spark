@@ -2621,7 +2621,7 @@ zy add
   def registerMixTable(db: String, tb: String): Unit = {
     sparkSession.sessionState.catalog.registerMixTable(db, tb, logicalPlan)
   }
-  def lookupPezyTable(db: String, tb: String): Option[LogicalPlan] = {
+  def lookupMixTable(db: String, tb: String): Option[LogicalPlan] = {
     sparkSession.sessionState.catalog.lookupMixTable(db, tb)
   }
 
@@ -2630,7 +2630,6 @@ zy add
   }
 
   def createMixStreamTable(db: String,table: String): Unit =  {
-    //createTempViewCommand(viewName, replace = true, global = false)
     sparkSession.sessionState.catalog.registerMixTable(db, table, logicalPlan)
   }
 
