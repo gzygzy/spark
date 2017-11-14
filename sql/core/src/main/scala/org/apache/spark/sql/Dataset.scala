@@ -2618,10 +2618,10 @@ class Dataset[T] private[sql](
   /*
 zy add
 */
-  def registerMixTable(db: String, tb: String): Unit = {
+  def registerPezyTable(db: String, tb: String): Unit = {
     sparkSession.sessionState.catalog.registerMixTable(db, tb, logicalPlan)
   }
-  def lookupMixTable(db: String, tb: String): Option[LogicalPlan] = {
+  def lookupPezyTable(db: String, tb: String): Option[LogicalPlan] = {
     sparkSession.sessionState.catalog.lookupMixTable(db, tb)
   }
 

@@ -637,7 +637,7 @@ class SparkSession private(
     logInfo("sql :pezyinterface 2")
     val newInst = cls.newInstance()
     logInfo("sql :pezyinterface 3")
-    newInst.asInstanceOf[mixinterface].analysisSql(sqlText,this)
+    newInst.asInstanceOf[pezyinterface].analysisSql(sqlText,this)
     logInfo("sql :pezyinterface 4")
     //}
     //add end
