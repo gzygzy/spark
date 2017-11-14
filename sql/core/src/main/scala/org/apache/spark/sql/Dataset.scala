@@ -2608,7 +2608,19 @@ class Dataset[T] private[sql](
   def registerTempTable(tableName: String): Unit = {
     createOrReplaceTempView(tableName)
   }
+  /*
+  zy add
+*/
+  def registerPezyTable(db: String, tb: String): Unit = {
+    sparkSession.sessionState.catalog.registerPezyTable(db, tb, logicalPlan)
+  }
+  def lookupPezyTable(db: String, tb: String): Option[LogicalPlan] = {
+    sparkSession.sessionState.catalog.lookupPezyTable(db, tb)
+  }
 
+  def getlogicalPlan(): LogicalPlan = {
+    logicalPlan
+  }
   /**
    * Creates a local temporary view using the given name. The lifetime of this
    * temporary view is tied to the [[SparkSession]] that was used to create this Dataset.
