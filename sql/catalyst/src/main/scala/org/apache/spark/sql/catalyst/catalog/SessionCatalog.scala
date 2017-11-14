@@ -654,6 +654,21 @@ class SessionCatalog(
     }
   }
 
+
+  /** *****zy add*******/
+  private val pezyTables = new mutable.HashMap[String, LogicalPlan]
+  def registerPezyTable(
+  db: String,table: String,
+   pezyviewDefinition: LogicalPlan): Unit  =  synchronized {
+    logDebug("db: "+db+" table:"+table+" LogicalPlan: "+ pezyviewDefinition)
+    pezyTables.put(db+"."+table, pezyviewDefinition)
+  }
+  def lookupPezyTable(db: String,table: String):Option[LogicalPlan] =  synchronized {
+    val lp = pezyTables.get(db+"."+table)
+    logDebug("lookupPezyTable: "+db +" . "+table+" :"+lp)
+    lp
+  }
+
   /**
    * Return a [[LogicalPlan]] that represents the given table or view.
    *
@@ -678,6 +693,11 @@ class SessionCatalog(
           SubqueryAlias(table, viewDef)
         }.getOrElse(throw new NoSuchTableException(db, table))
       } else if (name.database.isDefined || !tempTables.contains(table)) {
+        /******zy add*******/
+        val lp = pezyTables.get(db+"."+table)
+        logDebug("pezy lookupRelation:"+db+"."+table+" "+lp)
+        if (!lp.isEmpty) return SubqueryAlias(table, lp.getOrElse(null))
+        /**zy add end*/
         val metadata = externalCatalog.getTable(db, table)
         if (metadata.tableType == CatalogTableType.VIEW) {
           val viewText = metadata.viewText.getOrElse(sys.error("Invalid view without text."))
