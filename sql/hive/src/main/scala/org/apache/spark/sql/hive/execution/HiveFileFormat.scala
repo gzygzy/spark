@@ -18,22 +18,20 @@
 package org.apache.spark.sql.hive.execution
 
 import scala.collection.JavaConverters._
-
 import org.apache.hadoop.fs.{FileStatus, Path}
 import org.apache.hadoop.hive.ql.exec.Utilities
 import org.apache.hadoop.hive.ql.io.{HiveFileFormatUtils, HiveOutputFormat}
 import org.apache.hadoop.hive.serde2.Serializer
 import org.apache.hadoop.hive.serde2.objectinspector.{ObjectInspectorUtils, StructObjectInspector}
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption
-import org.apache.hadoop.io.Writable
+import org.apache.hadoop.io.{Text, Writable}
 import org.apache.hadoop.mapred.{JobConf, Reporter}
 import org.apache.hadoop.mapreduce.{Job, TaskAttemptContext}
-
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.execution.datasources.{FileFormat, OutputWriter, OutputWriterFactory}
-import org.apache.spark.sql.hive.{HiveInspectors, HiveTableUtil}
+import org.apache.spark.sql.hive.{HiveInspectors, HiveTableUtil, pezyhivewriteif}
 import org.apache.spark.sql.hive.HiveShim.{ShimFileSinkDesc => FileSinkDesc}
 import org.apache.spark.sql.sources.DataSourceRegister
 import org.apache.spark.sql.types.StructType
@@ -89,9 +87,20 @@ class HiveFileFormat(fileSinkConf: FileSinkDesc)
     val fileSinkConfSer = fileSinkConf
     new OutputWriterFactory {
       private val jobConf = new SerializableJobConf(new JobConf(conf))
+      //zy add
+      /*
       @transient private lazy val outputFormat =
         jobConf.value.getOutputFormat.asInstanceOf[HiveOutputFormat[AnyRef, Writable]]
+      */
 
+      @transient private val outputFormat = {
+        if (jobConf.value.getOutputFormat.isInstanceOf[HiveOutputFormat[AnyRef, Writable]]) {
+          jobConf.value.getOutputFormat.asInstanceOf[HiveOutputFormat[AnyRef, Writable]]
+        }
+        else {
+          new org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat[Text, Text]
+        }
+      }
       override def getFileExtension(context: TaskAttemptContext): String = {
         Utilities.getFileExtension(jobConf.value, fileSinkConfSer.getCompressed, outputFormat)
       }
@@ -141,16 +150,39 @@ class HiveOutputWriter(
   private val outputData = new Array[Any](fieldOIs.length)
 
   override def write(row: InternalRow): Unit = {
-    var i = 0
+//zy add
+    val jobconfser = new SerializableJobConf(jobConf)
+    if(jobconfser.value.getOutputFormat.isInstanceOf[HiveOutputFormat[AnyRef, Writable]]) {
+
+      var i = 0
     while (i < fieldOIs.length) {
       outputData(i) = if (row.isNullAt(i)) null else wrappers(i)(row.get(i, dataTypes(i)))
       i += 1
     }
     hiveWriter.write(serializer.serialize(outputData, standardOI))
+    } else{
+
+      val className ="com.pezy.spark.hivewritePlus"
+      val cls = Class.forName(className)
+      // logInfo("writeToFile :writeToFile 2")
+      val newInst = cls.newInstance()
+      // logInfo("writeToFile :writeToFile 3")
+      newInst.asInstanceOf[pezyhivewriteif].pezyhivewrite(row,wrappers,dataTypes,fieldOIs,outputData,standardOI,tableDesc)
+
+    }
   }
 
   override def close(): Unit = {
     // Seems the boolean value passed into close does not matter.
-    hiveWriter.close(false)
+    //zy add
+    val jobconfser = new SerializableJobConf(jobConf)
+    if(jobconfser.value.getOutputFormat.isInstanceOf[HiveOutputFormat[AnyRef, Writable]]) {
+      hiveWriter.close(false)
+    }else{
+      val className ="com.pezy.spark.hivewritePlus"
+      val cls = Class.forName(className)
+      val newInst = cls.newInstance()
+      newInst.asInstanceOf[pezyhivewriteif].pezyclose()
+    }
   }
 }
