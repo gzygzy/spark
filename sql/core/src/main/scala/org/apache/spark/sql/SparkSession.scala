@@ -621,6 +621,19 @@ class SparkSession private(
    * @since 2.0.0
    */
   def sql(sqlText: String): DataFrame = {
+    //zy add
+    val xx = conf.contains("spark.pezy.sql.plus")
+    // if(xx){
+    logInfo("sql :pezyinterface 1")
+    val className ="com.pezy.spark.SqlPlus"
+    val cls = Class.forName(className)
+    logInfo("sql :pezyinterface 2")
+    val newInst = cls.newInstance()
+    logInfo("sql :pezyinterface 3")
+    newInst.asInstanceOf[pezyinterface].analysisSql(sqlText,this)
+    logInfo("sql :pezyinterface 4")
+    //}
+    //add end
     Dataset.ofRows(self, sessionState.sqlParser.parsePlan(sqlText))
   }
 
