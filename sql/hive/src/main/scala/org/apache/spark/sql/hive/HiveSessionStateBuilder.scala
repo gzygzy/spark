@@ -98,6 +98,7 @@ class HiveSessionStateBuilder(session: SparkSession, parentState: Option[Session
         super.extraPlanningStrategies ++ customPlanningStrategies
 
       override def strategies: Seq[Strategy] = {
+        logInfo("zy HiveSessionStateBuilder strategies")
         experimentalMethods.extraStrategies ++
           extraPlanningStrategies ++ Seq(
           FileSourceStrategy,

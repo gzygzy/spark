@@ -124,6 +124,7 @@ class SparkSession private(
   @InterfaceStability.Unstable
   @transient
   lazy val sessionState: SessionState = {
+    logInfo("zy instantiateSessionState")
     parentSessionState
       .map(_.clone(this))
       .getOrElse {
@@ -1036,6 +1037,7 @@ object SparkSession {
     }
   }
 
+
   /**
    * Helper method to create an instance of `SessionState` based on `className` from conf.
    * The result is either `SessionState` or a Hive based `SessionState`.
@@ -1043,6 +1045,7 @@ object SparkSession {
   private def instantiateSessionState(
       className: String,
       sparkSession: SparkSession): SessionState = {
+
     try {
       // invoke `new [Hive]SessionStateBuilder(SparkSession, Option[SessionState])`
       val clazz = Utils.classForName(className)

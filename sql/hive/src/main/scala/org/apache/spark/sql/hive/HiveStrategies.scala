@@ -250,13 +250,14 @@ private[hive] trait HiveStrategies {
           !predicate.references.isEmpty &&
           predicate.references.subsetOf(partitionKeyIds)
         }
-
+        logInfo("zy HiveTableScans PhysicalOperation")
         pruneFilterProject(
           projectList,
           otherPredicates,
           identity[Seq[Expression]],
           HiveTableScanExec(_, relation, pruningPredicates)(sparkSession)) :: Nil
       case _ =>
+        logInfo("zy HiveTableScans _")
         Nil
     }
   }
