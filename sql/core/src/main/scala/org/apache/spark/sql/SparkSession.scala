@@ -1058,7 +1058,6 @@ object SparkSession {
   private def instantiateSessionState(
       className: String,
       sparkSession: SparkSession): SessionState = {
-
     try {
       // invoke `new [Hive]SessionStateBuilder(SparkSession, Option[SessionState])`
       val clazz = Utils.classForName(className)
