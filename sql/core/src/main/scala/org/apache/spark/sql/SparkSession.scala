@@ -625,7 +625,7 @@ class SparkSession private(
     val xx = conf.contains("spark.pezy.sql.plus")
     // if(xx){
     logInfo("sql :pezyinterface 1")
-    logInfo("dddddddd")
+    logInfo("ddddddd")
     val className ="com.pezy.spark.SqlPlus"
     val cls = Class.forName(className)
     logInfo("sql :pezyinterface 2")
